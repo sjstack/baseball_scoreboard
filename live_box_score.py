@@ -1,6 +1,7 @@
 #!/usr/bin/python
 
 import pprint as pp
+import RPi.GPIO as gpio
 
 import argparse
 import requests
@@ -203,106 +204,127 @@ if __name__ == "__main__":
     strikes = 0
     balls = 0
     outs = 0
+
+    gpio.setmode( gpio.BOARD )
+    pins = [ 16, 20, 21 ]
+    gpio.setup(pins, gpio.OUT)
     while True:
         resp      = requests.get( url )
         resp_json = json.loads( resp.content )
 
         mlb_game = find_game_by_team( resp_json, args.team )
 
-        num_innings = len( mlb_game['linescore']['inning'] )
-        mlb_linescore = mlb_game['linescore']
-        mlb_innings   = mlb_linescore['inning']
+        if str(mlb_game['status']['status']) != "Preview":
+            num_innings = len( mlb_game['linescore']['inning'] )
+            mlb_linescore = mlb_game['linescore']
+            mlb_innings   = mlb_linescore['inning']
 
-        hit = hits != ( int( mlb_linescore['h']['home'] ) + int( mlb_linescore['h']['away'] ) )
-        hits = ( int( mlb_linescore['h']['home'] ) + int( mlb_linescore['h']['away'] ) )
+            hit = hits != ( int( mlb_linescore['h']['home'] ) + int( mlb_linescore['h']['away'] ) )
+            hits = ( int( mlb_linescore['h']['home'] ) + int( mlb_linescore['h']['away'] ) )
 
-        error = errors != ( int( mlb_linescore['e']['home'] ) + int( mlb_linescore['e']['away'] ) )
-        errors = ( int( mlb_linescore['e']['home'] ) + int( mlb_linescore['e']['away'] ) )
+            error = errors != ( int( mlb_linescore['e']['home'] ) + int( mlb_linescore['e']['away'] ) )
+            errors = ( int( mlb_linescore['e']['home'] ) + int( mlb_linescore['e']['away'] ) )
 
-        ball = int( mlb_game['status']['b'] ) != 0 and balls != int( mlb_game['status']['b'] )
-        balls = int( mlb_game['status']['b'] )
+            ball = int( mlb_game['status']['b'] ) != 0 and balls != int( mlb_game['status']['b'] )
+            balls = int( mlb_game['status']['b'] )
 
-        strike = int( mlb_game['status']['s'] ) != 0 and strikes != int( mlb_game['status']['s'] )
-        strikes = int( mlb_game['status']['s'] )
+            strike = int( mlb_game['status']['s'] ) != 0 and strikes != int( mlb_game['status']['s'] )
+            strikes = int( mlb_game['status']['s'] )
 
-        out = int( mlb_game['status']['o'] ) != 0 and outs != int( mlb_game['status']['o'] )
-        outs = int( mlb_game['status']['o'] )
+            out = int( mlb_game['status']['o'] ) != 0 and outs != int( mlb_game['status']['o'] )
+            outs = int( mlb_game['status']['o'] )
 
-        game = { "inning": { "number":  int( mlb_game['status']['inning'] ),
-                             "status": str( mlb_game['status']['status'] ),
-                             "state": str( mlb_game['status']['inning_state'] ),
-                             "outs": int( mlb_game['status']['o'] ),
-                             "bases": { "first": None,
-                                        "second": None,
-                                        "third": None } },
-                 "home": { "name": str( mlb_game['home_team_name'] ),
-                           "box": [None]*9,
-                           "runs": int( mlb_linescore['r']['home'] ),
-                           "hits": int( mlb_linescore['h']['home'] ),
-                           "errors": int( mlb_linescore['e']['home'] ) },
-                 "away": { "name": str( mlb_game['away_team_name'] ),
-                           "box": [None]*9,
-                           "runs": int( mlb_linescore['r']['away'] ),
-                           "hits": int( mlb_linescore['h']['away'] ),
-                           "errors": int( mlb_linescore['e']['away'] ) },
-                 "at_bat": { "batter": None,
-                             "count": { "balls": 0,
-                                        "strikes": 0 },
-                             "pitcher": None },
-                 "last_play": None }
-
-        if "pbp" in mlb_game:
-            game["last_play"] = str( mlb_game["pbp"] )
-
-        if "batter" in mlb_game:
-            game["at_bat"]["batter"] = { "number": int( mlb_game["batter"]["number"] ),
-                                         "name": str(  mlb_game["batter"]["name_display_roster"] ) }
-            game["at_bat"]["count"] = { "balls": int( mlb_game['status']['b'] ),
-                                        "strikes": int( mlb_game['status']['s'] ) }
-        else:
-            game["at_bat"]["batter"] = None
-
-        if "pitcher" in mlb_game:
-            game["at_bat"]["pitcher"] = { "number": int( mlb_game["pitcher"]["number"] ),
-                                          "name": str(  mlb_game["pitcher"]["name_display_roster"] ) }
-        else:
-            game["at_bat"]["pitcher"] = None
-
-        if "runners_on_base" in mlb_game:
-            if "runner_on_1b" in mlb_game["runners_on_base"]:
-                game["inning"]["bases"]["first"] = { "name": str( mlb_game["runners_on_base"]["runner_on_1b"]["name_display_roster"] ),
-                                                     "number": int( mlb_game["runners_on_base"]["runner_on_1b"]["number"] ) }
+            if outs >= 1:
+                gpio.output(21, gpio.HIGH)
             else:
-                game["inning"]["bases"]["first"] = None
+                gpio.output(21, gpio.LOW)
 
-            if "runner_on_2b" in mlb_game["runners_on_base"]:
-                game["inning"]["bases"]["second"] = { "name": str( mlb_game["runners_on_base"]["runner_on_2b"]["name_display_roster"] ),
-                                                      "number": int( mlb_game["runners_on_base"]["runner_on_2b"]["number"] ) }
+            if outs >= 1:
+                gpio.output(20, gpio.HIGH)
             else:
-                game["inning"]["bases"]["second"] = None
+                gpio.output(20, gpio.LOW)
 
-            if "runner_on_3b" in mlb_game["runners_on_base"]:
-                game["inning"]["bases"]["third"] = { "name": str( mlb_game["runners_on_base"]["runner_on_3b"]["name_display_roster"] ),
-                                                     "number": int( mlb_game["runners_on_base"]["runner_on_3b"]["number"] ) }
+            if outs >= 3:
+                gpio.output(16, gpio.HIGH)
             else:
-                game["inning"]["bases"]["third"] = None
+                gpio.output(16, gpio.LOW)
+                                
+            
+            game = { "inning": { "number":  int( mlb_game['status']['inning'] ),
+                                 "status": str( mlb_game['status']['status'] ),
+                                 "state": str( mlb_game['status']['inning_state'] ),
+                                 "outs": int( mlb_game['status']['o'] ),
+                                 "bases": { "first": None,
+                                            "second": None,
+                                            "third": None } },
+                     "home": { "name": str( mlb_game['home_team_name'] ),
+                               "box": [None]*9,
+                               "runs": int( mlb_linescore['r']['home'] ),
+                               "hits": int( mlb_linescore['h']['home'] ),
+                               "errors": int( mlb_linescore['e']['home'] ) },
+                     "away": { "name": str( mlb_game['away_team_name'] ),
+                               "box": [None]*9,
+                               "runs": int( mlb_linescore['r']['away'] ),
+                               "hits": int( mlb_linescore['h']['away'] ),
+                               "errors": int( mlb_linescore['e']['away'] ) },
+                     "at_bat": { "batter": None,
+                                 "count": { "balls": 0,
+                                            "strikes": 0 },
+                                 "pitcher": None },
+                     "last_play": None }
 
-        if str( mlb_game['status']['status'] ) == "In Progress":
-            innings_class = mlb_innings.__class__
-            if innings_class == dict:
-                if 'home' in mlb_innings and mlb_innings['home'] != "":
-                    game["home"]["box"][0] = int( mlb_innings['home'] )
+            if "pbp" in mlb_game:
+                game["last_play"] = str( mlb_game["pbp"] )
 
-                if 'away' in mlb_innings and mlb_innings['away'] != "":
-                    game["away"]["box"][0] = int( mlb_innings['away'] )
-            elif innings_class == list:
-                for inning_i in range( num_innings ):
-                    if 'home' in mlb_innings[inning_i] and mlb_innings[inning_i]['home'] != "":
-                        game["home"]["box"][inning_i] = int( mlb_innings[inning_i]['home'] )
+            if "batter" in mlb_game:
+                game["at_bat"]["batter"] = { "number": int( mlb_game["batter"]["number"] ),
+                                             "name": str(  mlb_game["batter"]["name_display_roster"] ) }
+                game["at_bat"]["count"] = { "balls": int( mlb_game['status']['b'] ),
+                                            "strikes": int( mlb_game['status']['s'] ) }
+            else:
+                game["at_bat"]["batter"] = None
 
-                    if 'away' in mlb_innings[inning_i] and mlb_innings[inning_i]['away'] != "":
-                        game["away"]["box"][inning_i] = int( mlb_innings[inning_i]['away'] )
+            if "pitcher" in mlb_game:
+                game["at_bat"]["pitcher"] = { "number": int( mlb_game["pitcher"]["number"] ),
+                                              "name": str(  mlb_game["pitcher"]["name_display_roster"] ) }
+            else:
+                game["at_bat"]["pitcher"] = None
 
-        os.system( 'clear' )
-        print_game( game, hit, error )
-        time.sleep( 5 )
+            if "runners_on_base" in mlb_game:
+                if "runner_on_1b" in mlb_game["runners_on_base"]:
+                    game["inning"]["bases"]["first"] = { "name": str( mlb_game["runners_on_base"]["runner_on_1b"]["name_display_roster"] ),
+                                                         "number": int( mlb_game["runners_on_base"]["runner_on_1b"]["number"] ) }
+                else:
+                    game["inning"]["bases"]["first"] = None
+
+                if "runner_on_2b" in mlb_game["runners_on_base"]:
+                    game["inning"]["bases"]["second"] = { "name": str( mlb_game["runners_on_base"]["runner_on_2b"]["name_display_roster"] ),
+                                                          "number": int( mlb_game["runners_on_base"]["runner_on_2b"]["number"] ) }
+                else:
+                    game["inning"]["bases"]["second"] = None
+
+                if "runner_on_3b" in mlb_game["runners_on_base"]:
+                    game["inning"]["bases"]["third"] = { "name": str( mlb_game["runners_on_base"]["runner_on_3b"]["name_display_roster"] ),
+                                                         "number": int( mlb_game["runners_on_base"]["runner_on_3b"]["number"] ) }
+                else:
+                    game["inning"]["bases"]["third"] = None
+
+            if str( mlb_game['status']['status'] ) == "In Progress" or str( mlb_game['status']['status'] ) == "Final":
+                innings_class = mlb_innings.__class__
+                if innings_class == dict:
+                    if 'home' in mlb_innings and mlb_innings['home'] != "":
+                        game["home"]["box"][0] = int( mlb_innings['home'] )
+
+                    if 'away' in mlb_innings and mlb_innings['away'] != "":
+                        game["away"]["box"][0] = int( mlb_innings['away'] )
+                elif innings_class == list:
+                    for inning_i in range( num_innings ):
+                        if 'home' in mlb_innings[inning_i] and mlb_innings[inning_i]['home'] != "":
+                            game["home"]["box"][inning_i] = int( mlb_innings[inning_i]['home'] )
+
+                        if 'away' in mlb_innings[inning_i] and mlb_innings[inning_i]['away'] != "":
+                            game["away"]["box"][inning_i] = int( mlb_innings[inning_i]['away'] )
+
+            os.system( 'clear' )
+            print_game( game, hit, error )
+            time.sleep( 5 )
