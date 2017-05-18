@@ -1,7 +1,6 @@
 #!/usr/bin/python
 
 import pprint as pp
-import RPi.GPIO as gpio
 
 import argparse
 import requests
@@ -190,6 +189,7 @@ def print_game( game, hit, error ):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser( description = '' )
     parser.add_argument('--team', action='store', default="Red Sox", type=str, help='')
+    parser.add_argument("-v", "--virtual", help="Run scoreboard in virtual mode.", action="store_true")
     args = parser.parse_args()
 
     scoreboard_day_utc = get_datetime_from_utc()    
@@ -205,9 +205,12 @@ if __name__ == "__main__":
     balls = 0
     outs = 0
 
-    gpio.setmode( gpio.BOARD )
-    pins = [ 36, 38, 40 ]
-    gpio.setup(pins, gpio.OUT)
+    if not args.virtual:
+        import RPi.GPIO as gpio
+        gpio.setmode( gpio.BOARD )
+        pins = [ 36, 38, 40 ]
+        gpio.setup(pins, gpio.OUT)
+
     while True:
         resp      = requests.get( url )
         resp_json = json.loads( resp.content )
@@ -234,20 +237,21 @@ if __name__ == "__main__":
             out = int( mlb_game['status']['o'] ) != 0 and outs != int( mlb_game['status']['o'] )
             outs = int( mlb_game['status']['o'] )
 
-            if outs >= 1:
-                gpio.output(40, gpio.HIGH)
-            else:
-                gpio.output(40, gpio.LOW)
+            if not args.virtual:
+                if outs >= 1:
+                    gpio.output(40, gpio.HIGH)
+                else:
+                    gpio.output(40, gpio.LOW)
 
-            if outs >= 2:
-                gpio.output(38, gpio.HIGH)
-            else:
-                gpio.output(38, gpio.LOW)
+                if outs >= 2:
+                    gpio.output(38, gpio.HIGH)
+                else:
+                    gpio.output(38, gpio.LOW)
 
-            if outs >= 3:
-                gpio.output(36, gpio.HIGH)
-            else:
-                gpio.output(36, gpio.LOW)
+                if outs >= 3:
+                    gpio.output(36, gpio.HIGH)
+                else:
+                    gpio.output(36, gpio.LOW)
                                 
             
             game = { "inning": { "number":  int( mlb_game['status']['inning'] ),
