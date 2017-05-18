@@ -206,7 +206,7 @@ if __name__ == "__main__":
     outs = 0
 
     gpio.setmode( gpio.BOARD )
-    pins = [ 16, 20, 21 ]
+    pins = [ 36, 38, 40 ]
     gpio.setup(pins, gpio.OUT)
     while True:
         resp      = requests.get( url )
@@ -235,19 +235,19 @@ if __name__ == "__main__":
             outs = int( mlb_game['status']['o'] )
 
             if outs >= 1:
-                gpio.output(21, gpio.HIGH)
+                gpio.output(40, gpio.HIGH)
             else:
-                gpio.output(21, gpio.LOW)
+                gpio.output(40, gpio.LOW)
 
-            if outs >= 1:
-                gpio.output(20, gpio.HIGH)
+            if outs >= 2:
+                gpio.output(38, gpio.HIGH)
             else:
-                gpio.output(20, gpio.LOW)
+                gpio.output(38, gpio.LOW)
 
             if outs >= 3:
-                gpio.output(16, gpio.HIGH)
+                gpio.output(36, gpio.HIGH)
             else:
-                gpio.output(16, gpio.LOW)
+                gpio.output(36, gpio.LOW)
                                 
             
             game = { "inning": { "number":  int( mlb_game['status']['inning'] ),
