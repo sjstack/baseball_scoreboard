@@ -46,6 +46,8 @@ def print_game( game, hit, error ):
         inning_str = "Final"
     elif game['inning']['status'] == "Warmup":
         inning_str = "Warm'"
+    elif game['inning']['status'] == "Pre-Game":
+        inning_str = " Pre "
     top_inning_marker = " "
     bottom_inning_marker = " "
 
@@ -208,7 +210,7 @@ if __name__ == "__main__":
     if not args.virtual:
         import RPi.GPIO as gpio
         gpio.setmode( gpio.BOARD )
-        pins = [ 36, 38, 40 ]
+        pins = [ 31, 33, 35, 37, 36, 38, 40 ]
         gpio.setup(pins, gpio.OUT)
 
     while True:
@@ -285,8 +287,52 @@ if __name__ == "__main__":
                                              "name": str(  mlb_game["batter"]["name_display_roster"] ) }
                 game["at_bat"]["count"] = { "balls": int( mlb_game['status']['b'] ),
                                             "strikes": int( mlb_game['status']['s'] ) }
+                if not args.virtual:
+                    if game["at_bat"]["count"]["strikes"] >= 1:
+                        gpio.output(40, gpio.HIGH)
+                    else:
+                        gpio.output(40, gpio.LOW)
+
+                    if game["at_bat"]["count"]["strikes"] >= 2:
+                        gpio.output(38, gpio.HIGH)
+                    else:
+                        gpio.output(38, gpio.LOW)
+
+                    if game["at_bat"]["count"]["strikes"] >= 3:
+                        gpio.output(36, gpio.HIGH)
+                    else:
+                        gpio.output(36, gpio.LOW)
+
+                    if game["at_bat"]["count"]["balls"] >= 1:
+                        gpio.output(31, gpio.HIGH)
+                    else:
+                        gpio.output(31, gpio.LOW)
+
+                    if game["at_bat"]["count"]["balls"] >= 2:
+                        gpio.output(33, gpio.HIGH)
+                    else:
+                        gpio.output(33, gpio.LOW)
+
+                    if game["at_bat"]["count"]["balls"] >= 3:
+                        gpio.output(35, gpio.HIGH)
+                    else:
+                        gpio.output(35, gpio.LOW)
+
+                    if game["at_bat"]["count"]["balls"] >= 4:
+                        gpio.output(37, gpio.HIGH)
+                    else:
+                        gpio.output(37, gpio.LOW)
+                        
             else:
                 game["at_bat"]["batter"] = None
+
+                gpio.output(40, gpio.LOW)
+                gpio.output(38, gpio.LOW)
+                gpio.output(36, gpio.LOW)
+                gpio.output(31, gpio.LOW)
+                gpio.output(33, gpio.LOW)
+                gpio.output(35, gpio.LOW)
+                gpio.output(37, gpio.LOW)
 
             if "pitcher" in mlb_game:
                 game["at_bat"]["pitcher"] = { "number": int( mlb_game["pitcher"]["number"] ),
