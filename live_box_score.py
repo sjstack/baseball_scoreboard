@@ -210,7 +210,7 @@ if __name__ == "__main__":
     if not args.virtual:
         import RPi.GPIO as gpio
         gpio.setmode( gpio.BOARD )
-        pins = [ 31, 33, 35, 37, 36, 38, 40 ]
+        pins = [ 3, 5, 7, 31, 33, 35, 37, 36, 38, 40 ]
         gpio.setup(pins, gpio.OUT)
 
     while True:
@@ -239,23 +239,21 @@ if __name__ == "__main__":
             out = int( mlb_game['status']['o'] ) != 0 and outs != int( mlb_game['status']['o'] )
             outs = int( mlb_game['status']['o'] )
 
-            if not args.virtual:
-                if outs >= 1:
-                    gpio.output(40, gpio.HIGH)
-                else:
-                    gpio.output(40, gpio.LOW)
+            if outs >= 1:
+                gpio.output( 7, gpio.HIGH )
+            else:
+                gpio.output( 7, gpio.LOW )
 
-                if outs >= 2:
-                    gpio.output(38, gpio.HIGH)
-                else:
-                    gpio.output(38, gpio.LOW)
+            if outs >= 2:
+                gpio.output( 5, gpio.HIGH )
+            else:
+                gpio.output( 5, gpio.LOW )
 
-                if outs >= 3:
-                    gpio.output(36, gpio.HIGH)
-                else:
-                    gpio.output(36, gpio.LOW)
-                                
-            
+            if outs >= 3:
+                gpio.output( 3, gpio.HIGH )
+            else:
+                gpio.output( 3, gpio.LOW )
+
             game = { "inning": { "number":  int( mlb_game['status']['inning'] ),
                                  "status": str( mlb_game['status']['status'] ),
                                  "state": str( mlb_game['status']['inning_state'] ),
