@@ -239,20 +239,21 @@ if __name__ == "__main__":
             out = int( mlb_game['status']['o'] ) != 0 and outs != int( mlb_game['status']['o'] )
             outs = int( mlb_game['status']['o'] )
 
-            if outs >= 1:
-                gpio.output( 7, gpio.HIGH )
-            else:
-                gpio.output( 7, gpio.LOW )
+            if not args.virtual:
+                if outs >= 1:
+                    gpio.output( 7, gpio.HIGH )
+                else:
+                    gpio.output( 7, gpio.LOW )
 
-            if outs >= 2:
-                gpio.output( 5, gpio.HIGH )
-            else:
-                gpio.output( 5, gpio.LOW )
+                if outs >= 2:
+                    gpio.output( 5, gpio.HIGH )
+                else:
+                    gpio.output( 5, gpio.LOW )
 
-            if outs >= 3:
-                gpio.output( 3, gpio.HIGH )
-            else:
-                gpio.output( 3, gpio.LOW )
+                if outs >= 3:
+                    gpio.output( 3, gpio.HIGH )
+                else:
+                    gpio.output( 3, gpio.LOW )
 
             game = { "inning": { "number":  int( mlb_game['status']['inning'] ),
                                  "status": str( mlb_game['status']['status'] ),
@@ -324,13 +325,14 @@ if __name__ == "__main__":
             else:
                 game["at_bat"]["batter"] = None
 
-                gpio.output(40, gpio.LOW)
-                gpio.output(38, gpio.LOW)
-                gpio.output(36, gpio.LOW)
-                gpio.output(31, gpio.LOW)
-                gpio.output(33, gpio.LOW)
-                gpio.output(35, gpio.LOW)
-                gpio.output(37, gpio.LOW)
+                if not args.virtual:
+                    gpio.output(40, gpio.LOW)
+                    gpio.output(38, gpio.LOW)
+                    gpio.output(36, gpio.LOW)
+                    gpio.output(31, gpio.LOW)
+                    gpio.output(33, gpio.LOW)
+                    gpio.output(35, gpio.LOW)
+                    gpio.output(37, gpio.LOW)
 
             if "pitcher" in mlb_game:
                 game["at_bat"]["pitcher"] = { "number": int( mlb_game["pitcher"]["number"] ),
