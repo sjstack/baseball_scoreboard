@@ -3,8 +3,7 @@ from scoreboard import *
 class VirtualScoreboard( Scoreboard ):
     def __init__( self ):
         Scoreboard.__init__( self )
-        print 'init VirtualScoreboard'
-        
+
     def run_( self ):
-        print "Running Virtual Scoreboard"
+        Scoreboard.run_( self )
         self.mb_running = False
