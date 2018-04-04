@@ -1,5 +1,7 @@
-
+import sys
 import argparse
+
+sys.path.append('../utils')
 import logger as paul_bunyan
 
 from scoreboard import Scoreboard

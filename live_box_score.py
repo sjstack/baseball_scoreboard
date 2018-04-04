@@ -11,6 +11,9 @@ import os
 
 from datetime import datetime, timedelta
 
+sys.path.append('./utils')
+import time_utils
+
 def find_game_by_team( i_game_day_json, i_team_name ):
     games = []
     for game in i_game_day_json['data']['games']['game']:
@@ -19,9 +22,6 @@ def find_game_by_team( i_game_day_json, i_team_name ):
             if game['status']['status'] == "In Progress":
                 return game
     return games[-1]
-
-def get_datetime_from_utc( utc_datetime = datetime.utcnow(), hours_rewind=12 ):
-    return utc_datetime - timedelta( hours=hours_rewind )
 
 def print_game( game, hit, error ):
     error_map = { "error by pitcher": "E1",
@@ -194,7 +194,7 @@ if __name__ == "__main__":
     parser.add_argument("-v", "--virtual", help="Run scoreboard in virtual mode.", action="store_true")
     args = parser.parse_args()
 
-    scoreboard_day_utc = get_datetime_from_utc()    
+    scoreboard_day_utc = time_utils.get_datetime_from_utc()
     year = scoreboard_day_utc.year
     month = scoreboard_day_utc.month
     day = scoreboard_day_utc.day
