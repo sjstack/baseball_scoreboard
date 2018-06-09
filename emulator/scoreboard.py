@@ -24,4 +24,14 @@ class Scoreboard:
 
     def run_( self ):
         print "Running Scoreboard"
+        time.sleep( 5 )
         self.mb_running = False
+
+    def find_game_by_team( i_game_day_json, i_team_name ):
+        games = []
+        for game in i_game_day_json['data']['games']['game']:
+            if game['home_team_name'] == i_team_name or game['away_team_name'] == i_team_name:
+                games.append( game )
+                if game['status']['status'] == "In Progress":
+                    return game
+        return games[-1]
