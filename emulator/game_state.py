@@ -81,7 +81,7 @@ class InningState:
         self.m_batter  = None
         self.m_bases   = [ None, None, None ]
 
-        self.play_by_play = None
+        self.ms_play_by_play = None
 
     def update( self, i_game ):
         self.mi_number = int( i_game['status']['inning'] )
@@ -97,6 +97,15 @@ class InningState:
                              "name": str(  mlb_game["pitcher"]["name_display_roster"] ) }
         else:
             self.m_pitcher = None
+
+        if "batter" in i_game:
+            self.m_batter = { "number": int( mlb_game["batter"]["number"] ),
+                              "name": str(  mlb_game["batter"]["name_display_roster"] ) }
+            self.md_count = { "balls": int( mlb_game['status']['b'] ),
+                              "strikes": int( mlb_game['status']['s'] ) }
+        else:
+            self.m_batter = None
+            self.md_count  = { "balls": 0, "strikes": 0 }
 
         if "runners_on_base" in i_game:
             if "runner_on_1b" in i_game["runners_on_base"]:
@@ -118,7 +127,7 @@ class InningState:
                 self.m_bases[2] = None
 
             if "pbp" in i_game:
-                self.play_by_play = str( mlb_game["pbp"] )
+                self.ms_play_by_play = str( mlb_game["pbp"] )
 
 class TeamState:
     def __init__( self, i_home_or_away ):
