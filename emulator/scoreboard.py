@@ -7,6 +7,8 @@ sys.path.append('./utils')
 import logger as paul_bunyan
 import time_utils
 
+from game_state import GameState
+
 DEFAULT_ARGS = {
     'debug': False,
     'virtual': True,
@@ -22,7 +24,7 @@ class Scoreboard:
     def run( self, args = DEFAULT_ARGS ):
         self.set_runtime_params( args )
 
-        self.game = GameState()
+        self.m_game = GameState()
         self.mb_running = True
         while self.mb_running:
             if self.mb_debug_mode:
@@ -34,7 +36,7 @@ class Scoreboard:
                     paul_bunyan.log_exception( ex )
                     self.mb_running = False
                     return
-            time.sleep( 5 )
+            time_utils.sleep( 5 )
 
     def set_runtime_params( self, i_runtime_args ):
         self.ms_team_name   = i_runtime_args['team']
@@ -45,11 +47,11 @@ class Scoreboard:
         print "Running Scoreboard"
         response_json = self.request_gameday_data()
         game_json = self.find_game_by_team( response_json, self.ms_team_name )
-        self.game.update( game_json )
+        self.m_game.update( game_json )
 
-    def find_game_by_team( self, i_game_day_json, i_team_name ):
+    def find_game_by_team( self, i_gameday_json, i_team_name ):
         games = []
-        for game in i_game_day_json['data']['games']['game']:
+        for game in i_gameday_json['data']['games']['game']:
             if game['home_team_name'] == i_team_name or game['away_team_name'] == i_team_name:
                 games.append( game )
                 if game['status']['status'] == "In Progress":
