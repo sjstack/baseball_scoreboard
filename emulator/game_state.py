@@ -1,6 +1,3 @@
-import pdb
-import pprint
-
 DEFAULT_PARAMS = {
     'record': False,
     'home_team': "Home",
@@ -145,7 +142,7 @@ class TeamState:
         self.mi_runs   = i_game['linescore']['r'][self.ms_home_or_away]
         self.mi_hits   = i_game['linescore']['h'][self.ms_home_or_away]
         self.mi_errors = i_game['linescore']['e'][self.ms_home_or_away]
-        pdb.set_trace()
+
         if str( i_game['status']['status'] ) == "In Progress" or str( i_game['status']['status'] ) == "Final":
             innings_class = i_game['innings'].__class__
             if innings_class == dict:
