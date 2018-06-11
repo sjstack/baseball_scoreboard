@@ -140,16 +140,11 @@ class TeamState:
         if str( i_game['status']['status'] ) == "In Progress" or str( i_game['status']['status'] ) == "Final":
             innings_class = i_game['innings'].__class__
             if innings_class == dict:
-                if 'home' in mlb_innings and mlb_innings['home'] != "":
-                    game["home"]["box"][0] = int( mlb_innings['home'] )
+                if self.ms_home_or_away in mlb_innings and mlb_innings[self.ms_home_or_away] != "":
+                    self.ma_box[0] = int( mlb_innings[self.ms_home_or_away] )
 
-                if 'away' in mlb_innings and mlb_innings['away'] != "":
-                    game["away"]["box"][0] = int( mlb_innings['away'] )
             elif innings_class == list:
                 for inning_i in range( num_innings ):
-                    if 'home' in mlb_innings[inning_i] and mlb_innings[inning_i]['home'] != "":
-                        game["home"]["box"][inning_i] = int( mlb_innings[inning_i]['home'] )
-
-                    if 'away' in mlb_innings[inning_i] and mlb_innings[inning_i]['away'] != "":
-                        game["away"]["box"][inning_i] = int( mlb_innings[inning_i]['away'] )
+                    if self.ms_home_or_away in mlb_innings[inning_i] and mlb_innings[inning_i][self.ms_home_or_away] != "":
+                        self.ma_box[inning_i] = int( mlb_innings[inning_i][self.ms_home_or_away] )
 
