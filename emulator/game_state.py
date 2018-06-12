@@ -1,7 +1,7 @@
 DEFAULT_PARAMS = {
     'record': False,
-    'home_team': "Home",
-    'away_team': "Away",
+    'home_team': "home",
+    'away_team': "away",
     }
 
 class GameState:
@@ -33,13 +33,16 @@ class GameState:
         if self.mb_record_mode:
             # record game_json with timestamp
             print "record"
-        print i_game_json
 
         self.set_hits( i_game_json['linescore']['h'] )
         self.set_errors( i_game_json['linescore']['e'] )
         self.set_balls( i_game_json['status'] )
         self.set_strikes( i_game_json['status'] )
         self.set_outs( i_game_json['status'] )
+
+        self.m_inning.update( i_game_json )
+        self.m_home_team.update( i_game_json )
+        self.m_away_team.update( i_game_json )
 
     def set_hits( self, i_linescore_hits ):
         total_hits   = int( i_linescore_hits['home'] ) + int( i_linescore_hits['away'] )
@@ -52,17 +55,20 @@ class GameState:
         self.mi_errors = total_errors
 
     def set_balls( self, i_game_status ):
-        num_balls     = int( i_game_status['balls'] )
+        key = 'balls' if i_game_status.has_key( 'balls' ) else 'b'
+        num_balls     = int( i_game_status[key] )
         self.mb_ball  = num_balls != 0 and self.mi_balls > num_balls
         self.mi_balls = num_balls
 
     def set_strikes( self, i_game_status ):
-        num_strikes     = int( i_game_status['strikes'] )
+        key = 'strikes' if i_game_status.has_key( 'strikes' ) else 's'
+        num_strikes     = int( i_game_status[key] )
         self.mb_strike  = num_strikes != 0 and self.mi_strikes != num_strikes
         self.mi_strikes = num_strikes
 
     def set_outs( self, i_game_status ):
-        num_outs     = int( i_game_status['outs'] )
+        key = 'outs' if i_game_status.has_key( 'outs' ) else 'o'
+        num_outs     = int( i_game_status['o'] )
         self.mb_out  = num_outs != 0 and self.mi_outs > num_outs
         self.mi_outs = num_outs
 
@@ -86,20 +92,17 @@ class InningState:
         self.ms_state  = str( i_game['status']['inning_state'] )
         self.mi_outs   = int( i_game['status']['o'] )
 
-        self.m_home_team.update( i_game )
-        self.m_away_team.update( i_game )
-
         if "pitcher" in i_game:
-            self.m_pitcher = { "number": int( mlb_game["pitcher"]["number"] ),
-                             "name": str(  mlb_game["pitcher"]["name_display_roster"] ) }
+            self.m_pitcher = { "number": int( i_game["pitcher"]["number"] ),
+                               "name": str(  i_game["pitcher"]["name_display_roster"] ) }
         else:
             self.m_pitcher = None
 
         if "batter" in i_game:
-            self.m_batter = { "number": int( mlb_game["batter"]["number"] ),
-                              "name": str(  mlb_game["batter"]["name_display_roster"] ) }
-            self.md_count = { "balls": int( mlb_game['status']['b'] ),
-                              "strikes": int( mlb_game['status']['s'] ) }
+            self.m_batter = { "number": int( i_game["batter"]["number"] ),
+                              "name": str(  i_game["batter"]["name_display_roster"] ) }
+            self.md_count = { "balls": int( i_game['status']['b'] ),
+                              "strikes": int( i_game['status']['s'] ) }
         else:
             self.m_batter = None
             self.md_count  = { "balls": 0, "strikes": 0 }
@@ -124,7 +127,7 @@ class InningState:
                 self.m_bases[2] = None
 
             if "pbp" in i_game:
-                self.ms_play_by_play = str( mlb_game["pbp"] )
+                self.ms_play_by_play = str( i_game["pbp"] )
 
 class TeamState:
     def __init__( self, i_home_or_away ):
@@ -144,13 +147,15 @@ class TeamState:
         self.mi_errors = i_game['linescore']['e'][self.ms_home_or_away]
 
         if str( i_game['status']['status'] ) == "In Progress" or str( i_game['status']['status'] ) == "Final":
-            innings_class = i_game['innings'].__class__
+            innings = i_game['linescore']['inning']
+            num_innings = len( innings )
+            innings_class = innings.__class__
             if innings_class == dict:
-                if self.ms_home_or_away in mlb_innings and mlb_innings[self.ms_home_or_away] != "":
-                    self.ma_box[0] = int( mlb_innings[self.ms_home_or_away] )
+                if self.ms_home_or_away in  innings and innings[self.ms_home_or_away] != "":
+                    self.ma_box[0] = int( innings[self.ms_home_or_away] )
 
             elif innings_class == list:
                 for inning_i in range( num_innings ):
-                    if self.ms_home_or_away in mlb_innings[inning_i] and mlb_innings[inning_i][self.ms_home_or_away] != "":
-                        self.ma_box[inning_i] = int( mlb_innings[inning_i][self.ms_home_or_away] )
+                    if self.ms_home_or_away in  innings[inning_i] and innings[inning_i][self.ms_home_or_away] != "":
+                        self.ma_box[inning_i] = int( innings[inning_i][self.ms_home_or_away] )
 

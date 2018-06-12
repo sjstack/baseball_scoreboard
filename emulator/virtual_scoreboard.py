@@ -1,3 +1,4 @@
+import pdb
 from scoreboard import *
 
 class VirtualScoreboard( Scoreboard ):
@@ -8,7 +9,6 @@ class VirtualScoreboard( Scoreboard ):
         Scoreboard.run_( self )
         os.system( 'clear' )
         self.print_game()
-        self.mb_running = False
 
     def print_game( self ):
         error_map = { "error by pitcher": "E1",

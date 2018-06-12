@@ -18,7 +18,6 @@ DEFAULT_ARGS = {
 
 class Scoreboard:
     def __init__( self ):
-        print 'init Scoreboard'
         self.mb_running = False
 
     def run( self, args = DEFAULT_ARGS ):
@@ -36,7 +35,7 @@ class Scoreboard:
                     paul_bunyan.log_exception( ex )
                     self.mb_running = False
                     return
-            time_utils.sleep( 5 )
+            time_utils.sleep( 3 )
 
     def set_runtime_params( self, i_runtime_args ):
         self.ms_team_name   = i_runtime_args['team']
@@ -44,7 +43,6 @@ class Scoreboard:
         self.mb_record_mode = i_runtime_args['record']
 
     def run_( self ):
-        print "Running Scoreboard"
         response_json = self.request_gameday_data()
         game_json = self.find_game_by_team( response_json, self.ms_team_name )
         self.m_game.update( game_json )
