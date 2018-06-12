@@ -1,7 +1,7 @@
 import sys
 import argparse
 
-sys.path.append('../utils')
+sys.path.append('./utils')
 import logger as paul_bunyan
 
 from scoreboard import Scoreboard
@@ -23,6 +23,10 @@ if __name__ == "__main__":
         arg_parser.add_argument("-d",
                                 "--debug",
                                 help="Run scoreboard in debug mode.",
+                                action="store_true")
+        arg_parser.add_argument("-r",
+                                "--record",
+                                help="Record game events to json file.",
                                 action="store_true")
         args = arg_parser.parse_args()
 
