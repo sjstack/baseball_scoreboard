@@ -1,3 +1,4 @@
+# This is not an install script
 # Scrap notes from linux install
 
 sudo dnf install python
