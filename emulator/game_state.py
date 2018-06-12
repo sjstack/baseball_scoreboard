@@ -1,3 +1,8 @@
+import sys
+
+sys.path.append('./utils')
+from game_recorder import GameRecorder
+
 DEFAULT_PARAMS = {
     'record': False,
     'home_team': "home",
@@ -6,9 +11,9 @@ DEFAULT_PARAMS = {
 
 class GameState:
     def __init__( self, i_game_params = DEFAULT_PARAMS ):
-        print 'init GameState'
-
-        self.mb_record_mode = i_game_params['record']
+        self.mb_record_mode = i_game_params['record'] if i_game_params.has_key( 'record' ) else DEFAULT_PARAMS['record']
+        if self.mb_record_mode:
+            self.m_game_recorder = GameRecorder()
 
         self.mb_hit  = False
         self.mi_hits = 0
@@ -26,13 +31,14 @@ class GameState:
         self.mi_outs = 0
 
         self.m_inning    = InningState()
-        self.m_home_team = TeamState( i_game_params['home_team'] )
-        self.m_away_team = TeamState( i_game_params['away_team'] )
+        home_team = i_game_params['home_team'] if i_game_params.has_key( 'home_team' ) else DEFAULT_PARAMS['home_team']
+        self.m_home_team = TeamState( home_team )
+        away_team = i_game_params['away_team'] if i_game_params.has_key( 'away_team' ) else DEFAULT_PARAMS['away_team']
+        self.m_away_team = TeamState( away_team )
 
     def update( self, i_game_json ):
         if self.mb_record_mode:
-            # record game_json with timestamp
-            print "record"
+            self.m_game_recorder.update_record( i_game_json )
 
         self.set_hits( i_game_json['linescore']['h'] )
         self.set_errors( i_game_json['linescore']['e'] )
@@ -68,7 +74,7 @@ class GameState:
 
     def set_outs( self, i_game_status ):
         key = 'outs' if i_game_status.has_key( 'outs' ) else 'o'
-        num_outs     = int( i_game_status['o'] )
+        num_outs     = int( i_game_status[key] )
         self.mb_out  = num_outs != 0 and self.mi_outs > num_outs
         self.mi_outs = num_outs
 
@@ -90,7 +96,8 @@ class InningState:
         self.mi_number = int( i_game['status']['inning'] )
         self.ms_status = str( i_game['status']['status'] )
         self.ms_state  = str( i_game['status']['inning_state'] )
-        self.mi_outs   = int( i_game['status']['o'] )
+        outs_key = 'outs' if i_game['status'].has_key( 'outs' ) else 'o'
+        self.mi_outs   = int( i_game['status'][outs_key] )
 
         if "pitcher" in i_game:
             self.m_pitcher = { "number": int( i_game["pitcher"]["number"] ),

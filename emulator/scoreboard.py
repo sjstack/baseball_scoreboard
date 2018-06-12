@@ -23,7 +23,7 @@ class Scoreboard:
     def run( self, args = DEFAULT_ARGS ):
         self.set_runtime_params( args )
 
-        self.m_game = GameState()
+        self.m_game = GameState( { 'record': self.mb_record_mode } )
         self.mb_running = True
         while self.mb_running:
             if self.mb_debug_mode:
@@ -35,7 +35,7 @@ class Scoreboard:
                     paul_bunyan.log_exception( ex )
                     self.mb_running = False
                     return
-            time_utils.sleep( 3 )
+            time_utils.sleep( 1 )
 
     def set_runtime_params( self, i_runtime_args ):
         self.ms_team_name   = i_runtime_args['team']
