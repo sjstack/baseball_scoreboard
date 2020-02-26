@@ -6,7 +6,7 @@ DEFAULT_PARAMS = {
 
 class GameState:
     def __init__( self, i_game_params = DEFAULT_PARAMS ):
-        print 'init GameState'
+        print( 'init GameState' )
 
         self.mb_record_mode = i_game_params['record']
 
@@ -32,7 +32,7 @@ class GameState:
     def update( self, i_game_json ):
         if self.mb_record_mode:
             # record game_json with timestamp
-            print "record"
+            print( "record" )
 
         self.set_hits( i_game_json['linescore']['h'] )
         self.set_errors( i_game_json['linescore']['e'] )
@@ -55,19 +55,19 @@ class GameState:
         self.mi_errors = total_errors
 
     def set_balls( self, i_game_status ):
-        key = 'balls' if i_game_status.has_key( 'balls' ) else 'b'
+        key = 'balls' if 'balls' in i_game_status else 'b'
         num_balls     = int( i_game_status[key] )
         self.mb_ball  = num_balls != 0 and self.mi_balls > num_balls
         self.mi_balls = num_balls
 
     def set_strikes( self, i_game_status ):
-        key = 'strikes' if i_game_status.has_key( 'strikes' ) else 's'
+        key = 'strikes' if 'strikes' in i_game_status else 's'
         num_strikes     = int( i_game_status[key] )
         self.mb_strike  = num_strikes != 0 and self.mi_strikes != num_strikes
         self.mi_strikes = num_strikes
 
     def set_outs( self, i_game_status ):
-        key = 'outs' if i_game_status.has_key( 'outs' ) else 'o'
+        key = 'outs' if 'outs' in i_game_status else 'o'
         num_outs     = int( i_game_status['o'] )
         self.mb_out  = num_outs != 0 and self.mi_outs > num_outs
         self.mi_outs = num_outs

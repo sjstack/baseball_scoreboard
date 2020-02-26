@@ -16,13 +16,13 @@ def log( text, tag = None, timestamp = False ):
         log_of = open( log_fname, 'w+' )
 
     log_entry = (str(datetime.now()) if timestamp else "") + ((" ["+tag+"] ") if None != tag else "")
-    log_entry += text + "\n"
+    log_entry += f"{text}\n"
 
     log_of.write( log_entry )
     log_of.flush()
 
 def log_exception( exception ):    
-    log( exception.message, "Exception", True )
+    log( exception, "Exception", True )
     stack_trace = traceback.format_exc()
     log( stack_trace )
     
