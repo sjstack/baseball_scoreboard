@@ -35,5 +35,5 @@ if __name__ == "__main__":
 
     except Exception as ex:
         paul_bunyan.log_exception( ex )
-        print "Exit from exception: ", ex.message
+        print( "Exit from exception: ", ex )
 # end __main__
